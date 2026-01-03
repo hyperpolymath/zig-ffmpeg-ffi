@@ -1,0 +1,95 @@
+= zig-ffmpeg-ffi
+:toc: left
+// SPDX-License-Identifier: AGPL-3.0-or-later
+
+Zig FFI bindings for FFmpeg (libavformat, libavcodec, libavutil).
+
+== Overview
+
+High-performance Zig interface for video/audio metadata extraction and format operations. Replaces subprocess calls to `ffprobe`/`ffmpeg` with direct library bindings.
+
+== Installation
+
+=== System Requirements
+
+[cols="1,2"]
+|===
+| Platform | Command
+
+| Fedora
+| `sudo dnf install ffmpeg-free-devel`
+
+| Ubuntu/Debian
+| `sudo apt install libavformat-dev libavcodec-dev libavutil-dev`
+
+| macOS
+| `brew install ffmpeg`
+
+| Arch
+| `sudo pacman -S ffmpeg`
+|===
+
+=== Building
+
+[source,bash]
+----
+zig build
+zig build test
+zig build run -- /path/to/video.mp4
+----
+
+== Usage
+
+=== Zig
+
+[source,zig]
+----
+const ffmpeg = @import("zig-ffmpeg-ffi");
+
+var info = try ffmpeg.probe(allocator, "video.mp4");
+defer info.deinit();
+
+std.debug.print("Duration: {d:.2}s\n", .{info.duration_seconds});
+std.debug.print("Format: {s}\n", .{info.format_name orelse "unknown"});
+
+for (info.streams) |stream| {
+    if (stream.stream_type == .video) {
+        std.debug.print("Video: {}x{} @ {d:.2}fps\n", .{
+            stream.width orelse 0,
+            stream.height orelse 0,
+            stream.frame_rate orelse 0,
+        });
+    }
+}
+----
+
+=== C FFI (for Rust/Deno/ReScript)
+
+[source,c]
+----
+#include "ffmpeg_ffi.h"
+
+FFIMediaInfo* info = ffmpeg_probe("video.mp4");
+if (info) {
+    double duration = ffmpeg_get_duration(info);
+    int64_t bitrate = ffmpeg_get_bitrate(info);
+
+    uint32_t count = ffmpeg_get_stream_count(info);
+    for (uint32_t i = 0; i < count; i++) {
+        CStreamInfo stream;
+        if (ffmpeg_get_stream(info, i, &stream)) {
+            // Use stream.width, stream.height, etc.
+        }
+    }
+
+    ffmpeg_free(info);
+}
+----
+
+== Provenance
+
+This library was inspired by https://github.com/hyperpolymath/panoptes[panoptes] video analysis needs. See link:PROVENANCE.md[PROVENANCE.md] for details.
+
+== License
+
+AGPL-3.0-or-later
