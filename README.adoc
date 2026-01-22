@@ -92,4 +92,4 @@ This library was inspired by https://github.com/hyperpolymath/panoptes[panoptes]
 
 == License
 
-AGPL-3.0-or-later
+PMPL-1.0-or-later
