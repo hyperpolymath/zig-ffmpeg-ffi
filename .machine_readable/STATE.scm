@@ -38,3 +38,7 @@
     (immediate
       ("Test with FFmpeg installed")
       ("Verify C FFI exports work"))))
+
+;; Updated: 2026-01-30
+;; Added Idris2 ABI definitions following universal standard
+;; All interface types now formally verified with dependent types
